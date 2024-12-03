@@ -13,6 +13,10 @@ public:
     virtual void insert(std::size_t position, T data) = 0;
     virtual void erase(std::size_t position) = 0;
     virtual std::size_t size() const = 0;
+    virtual std::size_t capacity() const {
+        return size();
+    }
+    virtual T &operator[](std::size_t position) = 0;
     virtual void clear() = 0;
     virtual bool empty() const = 0;
 };
