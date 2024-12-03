@@ -7,3 +7,5 @@ set(SOURCES main.cpp)
 include_directories(./include)
 
 add_executable(LibrarySystem main.cpp src/Models/Book.cpp)
+target_compile_options(LibrarySystem PUBLIC -fsanitize=undefined)
+target_link_options(LibrarySystem PUBLIC -fsanitize=undefined)
