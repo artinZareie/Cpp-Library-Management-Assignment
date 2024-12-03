@@ -1,5 +1,6 @@
 #pragma once
 #include <Utils/Iterator.hpp>
+#include <Utils/List.hpp>
 #include <cstddef>
 #include <memory>
 #include <stdexcept>
@@ -9,7 +10,7 @@
 * Implementation of standard one-direction linked list.
 */
 template<typename T>
-class LinkedList {
+class LinkedList : public List<T> {
 private:
     struct Node {
         std::unique_ptr<T> data;
@@ -26,7 +27,7 @@ private:
     std::shared_ptr<Node> m_tail;
     std::size_t m_capacity;
 public:
-    struct iterator : Iterator<T> {
+    struct iterator : public Iterator<T> {
         std::shared_ptr<Node> node;
 
         iterator(std::shared_ptr<Node> node) : node(node) {}
