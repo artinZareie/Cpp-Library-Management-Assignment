@@ -10,7 +10,7 @@
 * Implementation of standard one-direction linked list.
 */
 template<typename T>
-class LinkedList : public List<T> {
+class LinkedList final : public List<T> {
 private:
     struct Node {
         std::unique_ptr<T> data;

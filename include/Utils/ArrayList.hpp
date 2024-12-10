@@ -5,7 +5,7 @@
 #include <stdexcept>
 
 template <typename T>
-class ArrayList : public List<T> {
+class ArrayList final : public List<T> {
 private:
     T *m_data;
     std::size_t m_capacity, m_size;

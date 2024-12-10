@@ -1,4 +1,4 @@
-#include <Book.hpp>
+#include <Models/Book.hpp>
 
 Book::Book(std::string name, std::string author, std::string isbn) : m_name(name), m_author(author), m_isbn(isbn), m_is_borrowed(false) {}
 
