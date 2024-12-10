@@ -8,8 +8,13 @@ std::shared_ptr<DatabaseDriver> FileDbDriver::getInstance() {
     return instance;
 }
 
-FileDbDriver::FileDbDriver(const std::string &database, const std::filesystem::path &base_path) : 
-    DatabaseDriver(database), m_base_path(base_path) {}
+void FileDbDriver::setBasePath(const std::filesystem::path &path) {
+    m_base_path = path;
+}
+
+void FileDbDriver::setDatabase(const std::string &name) {
+    m_database = name;
+}
 
 FileDbDriver::~FileDbDriver() {
 

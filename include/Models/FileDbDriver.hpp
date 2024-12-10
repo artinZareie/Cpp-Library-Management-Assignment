@@ -12,9 +12,10 @@ private:
     std::filesystem::path getTablePath(const std::string &table) const;
 
 public:
-    FileDbDriver(const std::string &database = "default", const std::filesystem::path &base_path = ".");
-
     static std::shared_ptr<DatabaseDriver> getInstance();
+
+    void setBasePath(const std::filesystem::path &path);
+    void setDatabase(const std::string &name);
 
     bool createDatabase(const std::string &name) final;
     bool createTable(const std::unordered_map<std::string, Field> &fields) final;

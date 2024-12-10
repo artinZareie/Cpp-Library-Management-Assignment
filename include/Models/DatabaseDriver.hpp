@@ -38,16 +38,14 @@ public:
 
     static std::shared_ptr<DatabaseDriver> getInstance();
 
-    DatabaseDriver(const std::string &database = "default") : m_database(database) {}
+    virtual bool createDatabase(const std::string &name) = 0;
+    virtual bool createTable(const std::unordered_map<std::string, Field> &fields) = 0;
+    virtual bool dropTable(const std::string &name) = 0;
+    virtual bool dropDatabase(const std::string &name) = 0;
 
-    virtual bool createDatabase(const std::string &name);
-    virtual bool createTable(const std::unordered_map<std::string, Field> &fields);
-    virtual bool dropTable(const std::string &name);
-    virtual bool dropDatabase(const std::string &name);
-
-    virtual bool insert(const std::string &table, const Record &record);
-    virtual std::optional<Record> find(const std::string &table, const Record &constraints);
-    virtual ArrayList<Record> findAll(const std::string &table, const Record &constraints);
-    virtual bool remove(const std::string &table, const Record &constraints);
-    virtual bool update(const std::string &table, const Record &constraints, const Record &updated);
+    virtual bool insert(const std::string &table, const Record &record) = 0;
+    virtual std::optional<Record> find(const std::string &table, const Record &constraints) = 0;
+    virtual ArrayList<Record> findAll(const std::string &table, const Record &constraints) = 0;
+    virtual bool remove(const std::string &table, const Record &constraints) = 0;
+    virtual bool update(const std::string &table, const Record &constraints, const Record &updated) = 0;
 };
