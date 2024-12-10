@@ -39,7 +39,7 @@ public:
     static std::shared_ptr<DatabaseDriver> getInstance();
 
     virtual bool createDatabase(const std::string &name) = 0;
-    virtual bool createTable(const std::unordered_map<std::string, Field> &fields) = 0;
+    virtual bool createTable(const std::string &name, const std::unordered_map<std::string, Field> &fields) = 0;
     virtual bool dropTable(const std::string &name) = 0;
     virtual bool dropDatabase(const std::string &name) = 0;
 
