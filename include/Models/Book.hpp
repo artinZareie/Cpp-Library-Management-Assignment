@@ -14,7 +14,7 @@ public:
     std::string getName() const;
     std::string getAuthor() const;
     std::string getISBN() const;
-    bool isBorrowed() const;
-    void borrow();
+    bool isLoaning() const;
+    void loan();
     void returnBook();
 };

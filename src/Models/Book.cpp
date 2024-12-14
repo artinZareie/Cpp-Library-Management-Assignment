@@ -14,11 +14,11 @@ std::string Book::getISBN() const {
     return m_isbn;
 }
 
-bool Book::isBorrowed() const {
+bool Book::isLoaning() const {
     return m_is_borrowed;
 }
 
-void Book::borrow() {
+void Book::loan() {
     m_is_borrowed = true;
 }
 
