@@ -1,5 +1,6 @@
 #include "Utils/ArrayList.hpp"
 #include "Utils/Functional.hpp"
+#include "Utils/LinkedList.hpp"
 #include <Models/Library.hpp>
 #include <functional>
 #include <memory>
@@ -12,7 +13,20 @@ void Library::addUser(std::shared_ptr<User> user) {
     m_users.push_back(user);
 }
 
+void Library::reserveBook(std::shared_ptr<Book> book, std::shared_ptr<User> user) {
+    if (m_reservations[book].cfind(user) != m_reservations[book].cend()) {
+        return;
+    }
+
+    m_reservations[book].push_back(user);
+}
+
 void Library::loanBook(std::shared_ptr<Book> book, std::shared_ptr<User> user) {
+    if (m_loaned_books.count(book) > 0) {
+        reserveBook(book, user);
+        return;
+    }
+
     m_loaned_books[book] = user;
     user->loanBook(book);
 }
@@ -21,6 +35,28 @@ void Library::returnBook(std::shared_ptr<Book> book, std::shared_ptr<User> user)
     m_loaned_books.erase(book);
     user->returnBook(book);
 }
+
+void Library::removeFromReservation(std::shared_ptr<Book> book, std::shared_ptr<User> user) {
+    auto it = m_reservations[book].find(user);
+
+    if (it != m_reservations[book].end()) {
+        m_reservations[book].erase(it);
+    }
+}
+
+void Library::reverseToLoan(std::shared_ptr<Book> book) {
+    if (m_loaned_books.count(book) > 0) {
+        throw std::logic_error("Book is already loaning");
+    }
+
+    auto front = m_reservations[book].front();
+    m_reservations[book].pop_front();
+
+    m_loaned_books[book] = front;
+    front->loanBook(book);
+}
+
+LinkedList<std::shared_ptr<User>>& Library::getReservations(std::shared_ptr<Book> book) { return m_reservations[book]; }
 
 bool Library::registerMember(std::string username, std::string password) {
     std::shared_ptr<User> dummy_user = std::make_shared<User>(username, password, User::UserType::Member);
@@ -77,12 +113,16 @@ bool Library::isBookLoaned(std::shared_ptr<Book> book) {
 }
 
 std::string Library::getBookLoanedBy(std::shared_ptr<Book> book) {
-    return m_loaned_books.at(book)->getUsername();
+    return m_loaned_books[book]->getUsername();
 }
 
 void Library::removeBook(std::shared_ptr<Book> book) {
     if (m_loaned_books.count(book) > 0) {
         m_loaned_books.erase(book);
+    }
+
+    if (m_reservations.count(book) > 0) {
+        m_reservations.erase(book);
     }
 
     m_books.erase(book);
@@ -100,6 +140,13 @@ void Library::removeUser(std::shared_ptr<User> user) {
 
     for (auto book : to_return) {
         m_loaned_books.erase(book);
+    }
+
+    for (auto &[book, users] : m_reservations) {
+        auto it = users.find(user);
+        if (it != users.end()) {
+            users.erase(it);
+        }
     }
 }
 

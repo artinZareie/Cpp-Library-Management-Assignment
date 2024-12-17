@@ -50,5 +50,19 @@ int main() {
         std::cout << book->getName() << " loaned by " << loaned_by->getUsername() << std::endl;
     }
 
+    // Check reservation
+    auto user2 = library.getUser("user2");
+    auto book3 = library.getBook("isbn3");
+
+    if (user2 && book3) {
+        library.reserveBook(book3.value(), user2.value());
+        std::cout << book3.value()->getName() << " reserved by " << user2.value()->getUsername() << std::endl;
+    }
+
+    std::cout << "Reservations of book 3: " << std::endl;
+    for (auto &users : library.getReservations(book3.value())) {
+        std::cout << users->getUsername() << std::endl;
+    }
+
     return 0;
 }
