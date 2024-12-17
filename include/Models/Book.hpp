@@ -9,7 +9,7 @@ private:
     bool m_is_borrowed;
 
 public:
-    Book(std::string name, std::string author, std::string isbn);
+    Book(std::string isbn, std::string name, std::string author);
 
     std::string getName() const;
     std::string getAuthor() const;
@@ -17,4 +17,9 @@ public:
     bool isLoaning() const;
     void loan();
     void returnBook();
+
+    bool operator==(const Book& other) const;
+    bool operator!=(const Book& other) const;
+    bool operator==(std::string isbn) const;
+    bool operator!=(std::string isbn) const;
 };

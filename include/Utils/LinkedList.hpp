@@ -3,6 +3,7 @@
 #include <Utils/Iterator.hpp>
 #include <Utils/List.hpp>
 #include <cstddef>
+#include <functional>
 #include <memory>
 #include <stdexcept>
 
@@ -32,6 +33,8 @@ public:
         std::shared_ptr<Node> node;
 
         iterator(std::shared_ptr<Node> node) : node(node) {}
+
+        iterator(const iterator &other) : node(other.node) {}
 
         T &operator*() override {
             return *node->data;
@@ -275,6 +278,18 @@ public:
         return iterator(nullptr);
     }
 
+    iterator find(const T& data, const std::function<bool(const T&, const T&)> &comp) {
+        std::shared_ptr<Node> node = m_head;
+        while (node) {
+            if (comp(*node->data, data)) {
+                return iterator(node);
+            }
+            node = node->next;
+        }
+
+        return end();
+    }
+
     void erase(iterator it) {
         std::shared_ptr<Node> node = m_head;
         std::shared_ptr<Node> prev = nullptr;
@@ -326,8 +341,15 @@ public:
         return const_iterator(nullptr);
     }
 
-    const_iterator find(const T &data) const {
-        return cfind(data);
+    const_iterator cfind(const T &data, const std::function<bool(const T &, const T &)> &comp) const {
+        std::shared_ptr<Node> node = m_head;
+        while (node) {
+            if (comp(*node->data, data)) {
+                return const_iterator(node);
+            }
+            node = node->next;
+        }
+        return cend();
     }
 
     ~LinkedList() {

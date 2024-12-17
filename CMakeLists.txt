@@ -17,5 +17,5 @@ add_executable(
     src/Models/Library.cpp
 )
 
-target_compile_options(LibrarySystem PUBLIC -fsanitize=undefined)
-target_link_options(LibrarySystem PUBLIC -fsanitize=undefined)
+target_compile_options(LibrarySystem PUBLIC -fsanitize=undefined,address)
+target_link_options(LibrarySystem PUBLIC -fsanitize=undefined,address)

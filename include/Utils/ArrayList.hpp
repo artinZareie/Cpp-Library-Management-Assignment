@@ -2,6 +2,8 @@
 #include "Utils/ConstIterator.hpp"
 #include <Utils/List.hpp>
 #include <Utils/Iterator.hpp>
+#include <cstdlib>
+#include <functional>
 #include <new>
 #include <stdexcept>
 
@@ -17,18 +19,22 @@ private:
     }
 
     void expand() {
-        T *new_data = reinterpret_cast<T *>(::operator new(sizeof(T) * m_capacity * 2));
+        std::size_t alignment = alignof(T);
+        T *new_data = reinterpret_cast<T *>(::operator new(sizeof(T) * m_capacity * 2, std::align_val_t(alignment)));
         for (std::size_t i = 0; i < m_size; ++i) {
-            new (new_data + i) T(m_data[i]);
+            new (new_data + i) T(std::move(m_data[i]));
+            m_data[i].~T();
         }
-        ::operator delete(m_data);
+
+        ::operator delete(m_data, std::align_val_t(alignment));
         m_data = new_data;
         m_capacity *= 2;
     }
 
     void check_storage() {
         if (m_data == nullptr) {
-            m_data = reinterpret_cast<T *>(::operator new(sizeof(T) * 2));
+            std::size_t alignment = alignof(T);
+            m_data = reinterpret_cast<T *>(::operator new(sizeof(T) * 2, std::align_val_t(alignment)));
             m_capacity = 2;
             m_size = 0;
         }
@@ -45,6 +51,8 @@ public:
         T &operator*() override {
             return m_data[m_index];
         }
+
+        iterator(const iterator &other) : m_data(other.m_data), m_index(other.m_index) {}
 
         iterator &operator++() override {
             ++m_index;
@@ -73,6 +81,8 @@ public:
         }
 
         iterator &operator=(iterator &&other) = delete;
+
+        friend class ArrayList;
     };
 
     struct const_iterator : public ConstIterator<T, const_iterator, iterator> {
@@ -86,6 +96,8 @@ public:
             return m_data[m_index];
         }
 
+        const_iterator(const const_iterator &other) : m_data(other.m_data), m_index(other.m_index) {}
+
         const_iterator &operator++() override {
             ++m_index;
             return *this;
@@ -95,6 +107,14 @@ public:
         }
 
         bool operator!=(const const_iterator &other) const override {
+            return m_index != other.m_index;
+        }
+
+        bool operator==(const iterator &other) const override {
+            return m_data == other.m_data && m_index == other.m_index;
+        }
+
+        bool operator!=(const iterator &other) const override {
             return m_index != other.m_index;
         }
 
@@ -118,10 +138,26 @@ public:
     };
 
 public:
-    explicit ArrayList(std::size_t size = 0, T data = T()) : m_data(reinterpret_cast<T *>(::operator new(sizeof(T) * (size + 1) * 2))), 
-        m_capacity((size + 1) * 2), m_size(size) {
-        for (std::size_t i = 0; i < size; ++i) {
-            new (m_data + i) T(data);
+    explicit ArrayList(std::size_t size = 0, const T &data = T())
+        : m_data(nullptr), m_capacity(0), m_size(0) {
+        if (size > 0) {
+            std::size_t alignment = alignof(T);
+            m_capacity = (size + 1) * 2;
+            m_data = reinterpret_cast<T *>(::operator new(sizeof(T) * m_capacity, std::align_val_t(alignment)));
+            try {
+                for (std::size_t i = 0; i < size; ++i) {
+                    new (m_data + i) T(data);
+                }
+                m_size = size;
+            } catch (...) {
+                for (std::size_t i = 0; i < m_size; ++i) {
+                    m_data[i].~T();
+                }
+                ::operator delete(m_data, std::align_val_t(alignment));
+                m_data = nullptr;
+                m_capacity = 0;
+                throw;
+            }
         }
     }
 
@@ -255,11 +291,14 @@ public:
             return;
         }
 
-        T *new_data = reinterpret_cast<T *>(::operator new(sizeof(T) * new_capacity));
+        std::size_t alignment = alignof(T);
+        T *new_data = reinterpret_cast<T *>(::operator new(sizeof(T) * new_capacity, std::align_val_t(alignment)));
         for (std::size_t i = 0; i < m_size; ++i) {
-            new (new_data + i) T(m_data[i]);
+            new (new_data + i) T(std::move(m_data[i]));
+            m_data[i].~T();
         }
-        ::operator delete(m_data);
+
+        ::operator delete(m_data, std::align_val_t(alignment));
         m_data = new_data;
         m_capacity = new_capacity;
     }
@@ -273,7 +312,7 @@ public:
     }
 
     void erase(iterator it) {
-        std::size_t index = it - begin();
+        std::size_t index = it.m_index - begin().m_index;
         erase(index);
     }
 
@@ -287,12 +326,63 @@ public:
         return end();
     }
 
+    // find with custom comparison function as template parameter.
+    iterator find(T data, const std::function<bool(const T &, const T &)> &comp) {
+        for (std::size_t i = 0; i < m_size; ++i) {
+            if (comp(m_data[i], data)) {
+                return iterator(m_data, i);
+            }
+        }
+
+        return end();
+    }
+
     void erase(T data) {
         iterator it = find(data);
         erase(it);
     }
 
+    const_iterator cbegin() const {
+        return const_iterator(m_data, 0);
+    }
+
+    const_iterator cend() const {
+        return const_iterator(m_data, m_size);
+    }
+
+    const_iterator begin() const {
+        return cbegin();
+    }
+
+    const_iterator end() const {
+        return cend();
+    }
+
+    const_iterator cfind(T data) const {
+        for (std::size_t i = 0; i < m_size; ++i) {
+            if (m_data[i] == data) {
+                return const_iterator(m_data, i);
+            }
+        }
+
+        return cend();
+    }
+
+    const_iterator cfind(T data, const std::function<bool(const T &, const T &)> &comp) const {
+        for (std::size_t i = 0; i < m_size; ++i) {
+            if (comp(m_data[i], data)) {
+                return const_iterator(m_data, i);
+            }
+        }
+
+        return cend();
+    }
+
     ~ArrayList() {
-        delete[] m_data;
+        for (std::size_t i = 0; i < m_size; ++i) {
+            m_data[i].~T();
+        }
+
+        ::operator delete(m_data, std::align_val_t(alignof(T)));
     }
 };
