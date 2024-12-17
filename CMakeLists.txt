@@ -18,6 +18,7 @@ add_executable(
     src/TUI/ScreenGrid.cpp
     src/TUI/Window.cpp
     src/TUI/Utils.cpp
+    src/TUI/Container.cpp
 )
 
 target_compile_options(LibrarySystem PUBLIC -fsanitize=undefined,address)
