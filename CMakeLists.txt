@@ -13,6 +13,8 @@ add_executable(
     src/Models/Book.cpp 
     # src/Models/DatabaseDriver.cpp
     # src/Models/FileDbDriver.cpp 
+    src/Models/User.cpp
+    src/Models/Library.cpp
 )
 
 target_compile_options(LibrarySystem PUBLIC -fsanitize=undefined)

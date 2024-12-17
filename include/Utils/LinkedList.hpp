@@ -1,4 +1,5 @@
 #pragma once
+#include "Utils/ConstIterator.hpp"
 #include <Utils/Iterator.hpp>
 #include <Utils/List.hpp>
 #include <cstddef>
@@ -52,7 +53,65 @@ public:
         bool operator!=(const iterator &other) const override {
             return node != other.node;
         }
+
+        iterator &operator=(const iterator &other) {
+            node = other.node;
+            return *this;
+        }
+
+        iterator &operator=(iterator &&other) {
+            node = other.node;
+            other.node = nullptr;
+            return *this;
+        }
     };
+
+    struct const_iterator : public ConstIterator<T, const_iterator, iterator> {
+        std::shared_ptr<Node> node;
+
+        const_iterator(std::shared_ptr<Node> node) : node(node) {}
+        const_iterator(const iterator &other) : node(other.node) {}
+
+        const T operator*() const override {
+            return *node->data;
+        }
+
+        const_iterator &operator++() override {
+            node = node->next;
+            return *this;
+        }
+
+        void operator++(int) override {
+            node = node->next;
+        }
+
+        bool operator==(const const_iterator &other) const override {
+            return node == other.node;
+        }
+
+        bool operator!=(const const_iterator &other) const override {
+            return node != other.node;
+        }
+
+        bool operator==(const iterator &other) const override {
+            return node == other.node;
+        }
+
+        bool operator!=(const iterator &other) const override {
+            return node != other.node;
+        }
+
+        const_iterator &operator=(const iterator &other) {
+            node = other.node;
+            return *this;
+        }
+
+        const_iterator &operator=(const const_iterator &other) {
+            node = other.node;
+            return *this;
+        }
+    };
+
 public:
     LinkedList(): m_head(nullptr), m_tail(nullptr), m_capacity(0) {}
     LinkedList(const LinkedList<T> &other): m_head(other.m_head), m_tail(other.m_tail), m_capacity(other.m_capacity) {}
@@ -93,7 +152,7 @@ public:
         ++m_capacity;
     }
 
-    T &operator[](std::size_t index) {
+    T &operator[](std::size_t index) override {
         if (index >= m_capacity) {
             throw std::out_of_range("Index out of range");
         }
@@ -203,6 +262,72 @@ public:
 
     iterator end() {
         return iterator(nullptr);
+    }
+
+    iterator find(const T& data) {
+        std::shared_ptr<Node> node = m_head;
+        while (node) {
+            if (*node->data == data) {
+                return iterator(node);
+            }
+            node = node->next;
+        }
+        return iterator(nullptr);
+    }
+
+    void erase(iterator it) {
+        std::shared_ptr<Node> node = m_head;
+        std::shared_ptr<Node> prev = nullptr;
+        while (node && node != it.node) {
+            prev = node;
+            node = node->next;
+        }
+        if (!node) {
+            return;
+        }
+
+        if (!prev) {
+            m_head = node->next;
+        } else {
+            prev->next = node->next;
+        }
+
+        --m_capacity;
+    }
+
+    void erase(T &data) {
+        erase(find(data));
+    }
+
+    const_iterator cbegin() const {
+        return const_iterator(m_head);
+    }
+
+    const_iterator cend() const {
+        return const_iterator(nullptr);
+    }
+
+    const_iterator begin() const {
+        return const_iterator(m_head);
+    }
+
+    const_iterator end() const {
+        return const_iterator(nullptr);
+    }
+
+    const_iterator cfind(const T &data) const {
+        std::shared_ptr<Node> node = m_head;
+        while (node) {
+            if (*node->data == data) {
+                return const_iterator(node);
+            }
+            node = node->next;
+        }
+        return const_iterator(nullptr);
+    }
+
+    const_iterator find(const T &data) const {
+        return cfind(data);
     }
 
     ~LinkedList() {

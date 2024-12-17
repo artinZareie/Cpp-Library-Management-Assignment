@@ -1,4 +1,5 @@
 #pragma once
+#include "Utils/ConstIterator.hpp"
 #include <Utils/List.hpp>
 #include <Utils/Iterator.hpp>
 #include <new>
@@ -49,8 +50,11 @@ public:
             ++m_index;
             return *this;
         }
-
         bool operator==(const iterator &other) const override {
+            if (m_data == nullptr || other.m_data == nullptr) {
+                return false;
+            }
+
             return m_data == other.m_data && m_index == other.m_index;
         }
 
@@ -60,6 +64,56 @@ public:
 
         void operator++(int) override {
             ++m_index;
+        }
+
+        iterator &operator=(const iterator &other) {
+            m_data = other.m_data;
+            m_index = other.m_index;
+            return *this;
+        }
+
+        iterator &operator=(iterator &&other) = delete;
+    };
+
+    struct const_iterator : public ConstIterator<T, const_iterator, iterator> {
+    private:
+        const T *m_data;
+        std::size_t m_index;
+
+    public:
+        const_iterator(const T *data = nullptr, std::size_t index = 0) : m_data(data), m_index(index) {}
+        const T operator*() const override {
+            return m_data[m_index];
+        }
+
+        const_iterator &operator++() override {
+            ++m_index;
+            return *this;
+        }
+        bool operator==(const const_iterator &other) const override {
+            return m_data == other.m_data && m_index == other.m_index;
+        }
+
+        bool operator!=(const const_iterator &other) const override {
+            return m_index != other.m_index;
+        }
+
+        void operator++(int) override {
+            ++m_index;
+        }
+
+        const_iterator(const iterator &other) : m_data(other.m_data), m_index(other.m_index) {}
+
+        const_iterator &operator=(const iterator &other) {
+            m_data = other.m_data;
+            m_index = other.m_index;
+            return *this;
+        }
+
+        const_iterator &operator=(const const_iterator &other) {
+            m_data = other.m_data;
+            m_index = other.m_index;
+            return *this;
         }
     };
 
@@ -216,6 +270,26 @@ public:
 
     iterator end() {
         return iterator(m_data, m_size);
+    }
+
+    void erase(iterator it) {
+        std::size_t index = it - begin();
+        erase(index);
+    }
+
+    iterator find(T data) {
+        for (std::size_t i = 0; i < m_size; ++i) {
+            if (m_data[i] == data) {
+                return iterator(m_data, i);
+            }
+        }
+
+        return end();
+    }
+
+    void erase(T data) {
+        iterator it = find(data);
+        erase(it);
     }
 
     ~ArrayList() {
