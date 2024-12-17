@@ -15,6 +15,8 @@ add_executable(
     # src/Models/FileDbDriver.cpp 
     src/Models/User.cpp
     src/Models/Library.cpp
+    src/TUI/ScreenGrid.cpp
+    src/TUI/Utils.cpp
 )
 
 target_compile_options(LibrarySystem PUBLIC -fsanitize=undefined,address)
