@@ -16,6 +16,7 @@ add_executable(
     src/Models/User.cpp
     src/Models/Library.cpp
     src/TUI/ScreenGrid.cpp
+    src/TUI/Window.cpp
     src/TUI/Utils.cpp
 )
 
