@@ -24,12 +24,4 @@ void Window::draw() {
     }
 }
 
-bool Window::click(std::size_t x, std::size_t y) {
-    if (x < m_pos_x || y < m_pos_y || x >= m_pos_x + m_width || y >= m_pos_y + m_height) {
-        return false;
-    }
-
-    return true;
-}
-
 Window::~Window() = default;

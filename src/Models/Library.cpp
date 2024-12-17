@@ -5,6 +5,11 @@
 #include <functional>
 #include <memory>
 
+Library &Library::getInstance() {
+    static Library instance;
+    return instance;
+}
+
 void Library::addBook(std::shared_ptr<Book> book) {
     m_books.push_back(book);
 }

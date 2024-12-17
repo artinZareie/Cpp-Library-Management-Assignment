@@ -16,6 +16,8 @@ private:
 public:
     Library() = default;
 
+    Library &getInstance();
+
     void addBook(std::shared_ptr<Book> book);
     void addUser(std::shared_ptr<User> user);
     void reserveBook(std::shared_ptr<Book> book, std::shared_ptr<User> user);

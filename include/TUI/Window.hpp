@@ -1,5 +1,6 @@
 #pragma once
 #include <cstddef>
+#include <functional>
 #include <string>
 
 // TODO: After testing, make this class pure abstract.
@@ -15,6 +16,6 @@ public:
     Window(std::size_t pos_x, std::size_t pos_y, std::size_t width, std::size_t height, std::string title = "", char border = '*');
 
     virtual void draw();
-    virtual bool click(std::size_t x, std::size_t y);
+    virtual bool click(std::size_t x, std::size_t y, std::function<void(std::size_t, std::size_t)>);
     virtual ~Window();
 };
