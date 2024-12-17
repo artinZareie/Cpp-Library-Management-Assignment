@@ -4,7 +4,7 @@
 #include <memory>
 #include <optional>
 
-class WindowContainer : public Window, Container {
+class WindowContainer : public Window, public Container {
 private:
 
 public:

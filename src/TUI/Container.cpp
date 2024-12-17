@@ -1,7 +1,19 @@
 #include <TUI/Container.hpp>
 #include <memory>
 
-void Container::add(std::shared_ptr<Window> window) { m_windows.push_back(window); }
+void Container::add(std::shared_ptr<Window> window) {
+    if (window == nullptr) {
+        return;
+    }
+
+    if (m_windows.find(window) != m_windows.end()) {
+        return;
+    }
+
+    m_windows.push_back(window);
+    window->make_visible();
+}
+
 void Container::remove(std::shared_ptr<Window> window) { m_windows.erase(window); }
 
 bool Container::click(std::size_t x, std::size_t y, std::function<void(std::size_t, std::size_t)> callback) {
